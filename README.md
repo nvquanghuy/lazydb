@@ -1,7 +1,7 @@
 LazyDB class is equipped with functions that help PHP programmers interact with database easier. Currently LazyDB supports PHP5 (preferbly 5.3 and above) and mySQL.
 
 Features
-========
+--------
 
  * Minimize the amount of php code needed
  * Pre-made functions to support SELECT, INSERT, UPDATE queries.
@@ -12,8 +12,8 @@ Features
 
 
 
-Using LazyDB
-============
+Instructions
+------------
 
 The following example uses a database `test` with the following sample table:
 
@@ -23,8 +23,10 @@ The following example uses a database `test` with the following sample table:
       `email` VARCHAR(55) NOT NULL
     )
 
-Copy lazydb.php to any folder in your application. Create a folder name `errorlogs` in your web app and make it writeable. This folder will contain sql error logs from the app. Initiate a lazydb object to connect to the database server using:
+Copy lazydb.php to any folder in your application. 
+Create a folder name `errorlogs` in your web app and make it writeable. This folder will contain sql error logs from the app. Initiate a lazydb object to connect to the database server using:
 
+```php
     require "lazydb.php";
     
     // if you only have 1 database to work on
@@ -36,9 +38,11 @@ Copy lazydb.php to any folder in your application. Create a folder name `errorlo
     // Interact with database server like $db->get_databases()
     // ...
     $db->select_db("test"); // select specific database when needed
+```
 
 To insert a record into database, we use `$db->insert` and `$db->insert_batch` for batch insertion. The following code insert 3 students to the database.
 
+```php
     // Single insertion
 
     $data = array(
@@ -63,12 +67,15 @@ To insert a record into database, we use `$db->insert` and `$db->insert_batch` f
       );
     }
     $db->insert_batch("students", $students);
+```
 
 To update a record:
 
+```php
     $student['name'] = "Peter O' Really";
     $student['email'] = "peter@random.email";
     $db->update("students", $student, "id = $student_id");
+```
 
 Note: You don't need to do quote escaping on string values, lazydb is smart enough to check if value passed is string and apply `mysql_real_escape_string` to it.
 
@@ -76,6 +83,7 @@ Note: You don't need to do quote escaping on string values, lazydb is smart enou
 
 To execute SELECT statement and return the resultset as an array of rows:
 
+```php
     $students = $db->query_select("SELECT * FROM students");
     print "<pre>" . print_r($students, true) . "</pre>";
 
@@ -102,9 +110,11 @@ To execute SELECT statement and return the resultset as an array of rows:
               [email] => alex_2@random.email
           )
     )"
+```
 
 If you want the keys of the array to take database's value instead of default increasing number
 
+```php
     $students = $db->query_select_manualkey("SELECT * FROM students", "email");
     print "<pre>" . print_r($students, true) . "</pre>";
 
@@ -131,10 +141,11 @@ If you want the keys of the array to take database's value instead of default in
               [email] => alex_2@random.email
           )
     )"
-
+```
 
 Execute SELECT statement that only gets 1 row and return that row as an php array.
 
+```php
     $first_student = $db->query_row("SELECT * FROM students ORDER BY `id` ASC LIMIT 0, 1");
     print "<pre>" . print_r($first_student, true) . "</pre>";
     
@@ -144,7 +155,7 @@ Execute SELECT statement that only gets 1 row and return that row as an php arra
       [name] => Johny
       [email] => john@random.email
     )"
-
+```
 
 Execute SELECT statement that only query 1 field. Returning an array contains values of that field.
 
@@ -166,18 +177,17 @@ Execute SELECT statement that returns 1 single scalar value:
     print "Random student name: $random_name";
 
 
-*And if your query doesn't fall into any of the above functions, you can always use `$db->query($sql)` which ultimately will call `mysql_query` function, for example to initially create the database:*
+And if your query doesn't fall into any of the above functions, you can always use `$db->query($sql)` which ultimately will call `mysql_query` function, for example to initially create the database:
 
-  $db->query("DROP TABLE IF EXISTS `students`");
-  $sql = "
-    CREATE TABLE `students` (
-      `id` INT(11) PRIMARY KEY AUTO_INCREMENT,
-      `name` VARCHAR(55) NOT NULL,
-      `email` VARCHAR(55) NOT NULL
-    )
-  ";
-  $db->query($sql);
-
+    $db->query("DROP TABLE IF EXISTS `students`");
+    $sql = "
+      CREATE TABLE `students` (
+        `id` INT(11) PRIMARY KEY AUTO_INCREMENT,
+        `name` VARCHAR(55) NOT NULL,
+        `email` VARCHAR(55) NOT NULL
+      )
+    ";
+    $db->query($sql);
 
 
 Some other functions:
@@ -193,6 +203,8 @@ Some other functions:
 
 
 Batch Updating
+--------------
+
 Currently the library doesn't allow batch updates, but you could easily do that by utilizing the syntax `INSERT ... ON DUPLICATE KEY `, as shown below:
 
     $students = $db->query_select("SELECT * FROM students");
