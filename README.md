@@ -209,7 +209,6 @@ Some other functions you might find useful:
 
 Batch Updating
 --------------
-
 To perform a batch update, utilize the syntax `INSERT ... ON DUPLICATE KEY` as follows:
 
 ```php
