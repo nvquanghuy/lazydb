@@ -1,4 +1,4 @@
-LazyDB is an simple, elegant PHP mySQL database library. As the name suggests, it requires minimal line of PHP code.
+LazyDB is an simple, elegant PHP mySQL database library. As the name suggests, it's meant for lazy developers and requires minimal amount of PHP code to work with mySQL database.
 
 **Features:**
 +   Fetch and transform table's records into PHP array.
@@ -54,7 +54,7 @@ $random_name = $db->query_scalar("SELECT name FROM students ORDER BY RAND() LIMI
 print $random_name;
 ```
 
-In summary, pick one of the following functions to query data effectively:
+**In summary**, pick one of the following functions to query data effectively:
 * `query_select`
 * `query_select_manualkey`
 * `query_row`
