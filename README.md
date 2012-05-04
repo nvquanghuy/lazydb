@@ -94,6 +94,7 @@ Return a single scalar value:
 
     John
 
+
 In summary, pick one of the following functions to query data effectively:
 * `query_select`
 * `query_select_manualkey`
@@ -107,22 +108,22 @@ Insert Data
 Use `$db->insert` and `$db->insert_batch` for data insertion:
 
 ```php
-    // Single insert
-    $student = array(
-      'name'    => 'Johny',
-      'email'   => 'john@random.email',
+  // Single insert
+  $student = array(
+    'name'    => 'Johny',
+    'email'   => 'john@random.email',
+  );
+  $student_id = $db->insert("students", $student);
+
+  // Batch insert
+  $students = array();
+  for ($i = 1; $i <= 2; $i++) {
+    $students[] = array(
+      'name'  => "Alexander the {$i}-th", 
+      'email' => "alex_{$i}@email.com"
     );
-    $student_id = $db->insert("students", $student);
-    
-    // Batch insert
-    $students = array();
-    for ($i = 1; $i <= 2; $i++) {
-      $students[] = array(
-        'name'  => "Alexander the {$i}-th", 
-        'email' => "alex_{$i}@email.com"
-      );
-    }
-    $db->insert_batch("students", $students);
+  }
+  $db->insert_batch("students", $students);
 ```
 
 Update Data
