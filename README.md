@@ -8,9 +8,6 @@ LazyDB is an simple, elegant PHP mySQL database library. As the name suggests, i
 
 See how it works below
 
-Working with Data
-=================
-
 Select Data
 ----------
 The simpicity of LazyDB is in its rich set of functions to help grab data in different formats and parse them into PHP array.
@@ -166,9 +163,6 @@ If none of the above fits:
   $db->query("DELETE FROM `students` WHERE id = 1");
 ```
 
-Other notable features
-======================
-
 Insert mySQL's expression as field's data
 ---------------------------------------
 If you want to insert a mysql's expression as a field's value, wrap the expression with `LazyDB::E($exp)`. For example:
@@ -210,7 +204,7 @@ Automatic serialization of array value:
 
 
 Download & Usage
-================
+----------------
 1/ Download and extract: https://github.com/nvquanghuy/lazydb/zipball/master
 
 2/ Modify database information in example.php. Run it to see a demo. 
@@ -225,5 +219,5 @@ Download & Usage
 ```
 
 Feedback & Suggestions
-======================
+----------------------
 You're welcome to fork, comments, give feedback or suggestion at nvquanghuy@gmail.com
