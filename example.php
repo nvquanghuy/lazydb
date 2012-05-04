@@ -2,6 +2,9 @@
 // Example usage of lazydb
 
 require "lazydb.php";
+
+// Please modify the below to fit your database config
+// host, username, pw, database
 $db = new LazyDB("localhost", "root", "root", "test");
 
 
@@ -33,7 +36,7 @@ $data = array(
 $student = array(
   'name'    => "Johny",
   'email'   => 'john@random.email',
-  'created' => LazyDB::createExpression('NOW()'),
+  'created' => LazyDB::E('NOW()'),
   'data'    => $data
 );
 
@@ -58,16 +61,19 @@ print "3. Get All students using <code>\$db->query_select</code><br/>";
 $students = $db->query_select("SELECT * FROM students");
 print "<pre>" . print_r($students, true) . "</pre><br/>";
 
+
 print "4. Get first student using <code>\$db->query_row</code><br/>";
 // query 1 single row
 $first_student = $db->query_row("SELECT * FROM students ORDER BY `id` ASC LIMIT 0, 1");
 $first_student['data'] = unserialize($first_student['data']);
 print "<pre>" . print_r($first_student, true) . "</pre><br/>";
 
+
 print "5. Get student names using <code>\$db->query_col</code><br/>";  
 // query multiple rows of 1 field
 $names = $db->query_col("SELECT name FROM students");
 print "<pre>" . print_r($names, true) . "</pre>";
+
 
 print "6. Get 1 random student name using <code>\$db->query_scalar</code><br/>";
 // query 1 single value
