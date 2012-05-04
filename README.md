@@ -13,84 +13,46 @@ Select Data
 The simpicity of LazyDB is in its rich set of functions to help grab data in different formats and parse them into PHP array.
 
 
-Return the resultset as an array of records:
+**Query list of records**
+```php
+$students = $db->query_select("SELECT * FROM students");
+
+foreach ($students as $student) {
+  // Deal with $student
+}
+```
+
+**List of records, with array's key to be 1 field**
+```php
+$students = $db->query_select_manualkey("SELECT * FROM students", "email");
+
+foreach ($students as $email => $student) {
+  // Deal with this student
+}
+```
+
+**Query only 1 record**
+```php
+$first_student = $db->query_row("SELECT * FROM students ORDER BY `id` ASC LIMIT 0, 1");
+
+// Deal with $first_student
+```
+
+**Query only 1 column**
+```php
+$names = $db->query_col("SELECT name FROM students");
+
+foreach ($names as $name) {
+  // Deal with $name
+}
+```
+
+**Return single scalar value**
 
 ```php
-    $students = $db->query_select("SELECT * FROM students");
-    print_r($students);
+$random_name = $db->query_scalar("SELECT name FROM students ORDER BY RAND() LIMIT 0, 1");
+print $random_name;
 ```
-```
-    Array(
-      [0] => Array (
-              [id] => 1
-              [name] => Peter O' Really
-              [email] => peter@email.com
-          )
-      [1] => Array (
-              [id] => 2
-              [name] => Alexander the 1-th
-              [email] => alex_1@email.com
-          )
-    )
-```
-
-If you want the array's keys to be a table's column (instead of increasing number), use `query_select_manualkey` and supply the column name:
-
-```php
-    $students = $db->query_select_manualkey("SELECT * FROM students", "email");
-    print_r($students);
-```
-```
-    Array (
-      [peter@email.com] => Array (
-              [id] => 1
-              [name] => Peter O' Really
-              [email] => peter@email.com
-          )
-      [alex_1@email.com] => Array (
-              [id] => 2
-              [name] => Alexander the 1-th
-              [email] => alex_1@email.com
-          )
-    )
-```
-
-Select 1 row:
-
-```php
-    $first_student = $db->query_row("SELECT * FROM students ORDER BY `id` ASC LIMIT 0, 1");
-```
-```
-Array (
-  [id] => 1
-  [name] => Johny
-  [email] => john@email.com
-)
-```
-
-Select 1 column:
-
-```php
-    $names = $db->query_col("SELECT name FROM students");
-    print_r($names);
-```
-``` 
-    Array (
-      [0] => Johny
-      [1] => Alexander the 1-th
-      [2] => Alexander the 2-th
-    )
-```
-
-Return a single scalar value:
-
-```php
-    $random_name = $db->query_scalar("SELECT name FROM students ORDER BY RAND() LIMIT 0, 1");
-    print $random_name;
-```
-
-    John
-
 
 In summary, pick one of the following functions to query data effectively:
 * `query_select`
@@ -99,10 +61,9 @@ In summary, pick one of the following functions to query data effectively:
 * `query_col`
 * `query_scalar`
 
-Insert Data
------------
-
-Use `$db->insert` and `$db->insert_batch` for data insertion:
+Insert Data Using Array
+-----------------------
+Use `$db->insert`:
 
 ```php
   // Single insert
@@ -111,7 +72,13 @@ Use `$db->insert` and `$db->insert_batch` for data insertion:
     'email'   => 'john@random.email',
   );
   $student_id = $db->insert("students", $student);
+```
 
+Batch Insert
+------------
+Use `$db->insert_batch`:
+
+```php
   // Batch insert
   $students = array();
   for ($i = 1; $i <= 2; $i++) {
@@ -125,7 +92,7 @@ Use `$db->insert` and `$db->insert_batch` for data insertion:
 
 Update Data
 -----------
-Use `$db->update` to update record.
+Use `$db->update`
 
 ```php
     $student = $db->query_row("SELECT * FROM students WHERE id = 1");
@@ -134,13 +101,14 @@ Use `$db->update` to update record.
     $db->update("students", $student, "id = 1");
 ```
 
-
-To perform batch update, use `$db->insert_batch` and make use of SQL syntax `INSERT ... ON DUPLICATE KEY` as follows:
+Batch Update
+------------
+Use `$db->insert_batch` and make use of SQL syntax `INSERT ... ON DUPLICATE KEY` as follows:
 
 ```php
     $students = $db->query_select("SELECT * FROM students");
 
-    // Assuming we'll get 3 records, change the records' values and update them back
+    // Assuming we'll get 3 records, change the records' values now
     $students[0]['name'] = "Alice";
     $students[0]['email'] = "alice@random.email";
     $students[1]['name'] = "Bob";
@@ -180,8 +148,10 @@ become:
 ```
 
 
-Automatic serialization of array value:
+Storing array in fields
 ---------------------------------------
+LazyDB automatically serializes and deserializes PHP array when storing and retrieving from database:
+
 ```php
 
   $extra = array(
@@ -200,7 +170,6 @@ Automatic serialization of array value:
   $student = $db->query_single("SELECT * FROM students WHERE id = $student_id");
   print "Age: " . $student['extra']['age'];
 ```
-
 
 
 Download & Usage
