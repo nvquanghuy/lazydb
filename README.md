@@ -1,219 +1,148 @@
-LazyDB class is equipped with functions that help PHP programmers interact with database easier. Currently LazyDB supports PHP5 (preferbly 5.3 and above) and mySQL.
+LazyDB is an simple, elegant PHP mySQL database library. As the name suggests, it requires minimal line of PHP code.
 
-Features
---------
+**Features:**
++   Fetch and transform table's records into PHP array.
++   Batch insert, batch update
++   Log SQL error to file
++   Automatic escaping of string value (through `mysql_real_escape_string`)
 
- * Minimize the amount of php code needed
- * Pre-made functions to support SELECT, INSERT, UPDATE queries.
- * Batch insertion.
- * Batch updating.
- * Supports logging SQL error to a log file so that sysadmin can easily debug and avoiding exposing database structure to visitors.
- * Automatic detect string value passed to escape (using `mysql_real_escape_string`)
+See how it works below
+
+Working with Data
+=================
+
+Select Data
+----------
+The simpicity of LazyDB is in its rich set of functions to help grab data in different formats and parse them into PHP array.
 
 
-
-Instructions
-------------
-
-The following example uses a database `test` with the following sample table:
-
-    CREATE TABLE `students` (
-      `id` INT(11) PRIMARY KEY AUTO_INCREMENT,
-      `name` VARCHAR(55) NOT NULL,
-      `email` VARCHAR(55) NOT NULL
-    )
-
-Copy lazydb.php to any folder in your application. 
-Create a folder name `errorlogs` in your web app and make it writeable. This folder will contain sql error logs from the app. Initiate a lazydb object to connect to the database server using:
+Return the resultset as an array of records:
 
 ```php
-    require "lazydb.php";
-    
-    // if you only have 1 database to work on
-    $db = new LazyDB("localhost", "root", "", "test");
-    
-    // or multiple databases
-    $db = new LazyDB("localhost", "root", "");
-    // ...
-    // Interact with database server like $db->get_databases()
-    // ...
-    $db->select_db("test"); // select specific database when needed
+    $students = $db->query_select("SELECT * FROM students");
+    print_r($students);
+```
+```
+    Array(
+      [0] => Array (
+              [id] => 1
+              [name] => Peter O' Really
+              [email] => peter@email.com
+          )
+      [1] => Array (
+              [id] => 2
+              [name] => Alexander the 1-th
+              [email] => alex_1@email.com
+          )
+    )
 ```
 
-To insert a record into database, we use `$db->insert` and `$db->insert_batch` for batch insertion. The following code insert 3 students to the database.
+If you want the array's keys to be a table's column (instead of increasing number), use `query_select_manualkey` and supply the column name:
 
 ```php
-    // Single insertion
+    $students = $db->query_select_manualkey("SELECT * FROM students", "email");
+    print_r($students);
+```
+```
+    Array (
+      [peter@email.com] => Array (
+              [id] => 1
+              [name] => Peter O' Really
+              [email] => peter@email.com
+          )
+      [alex_1@email.com] => Array (
+              [id] => 2
+              [name] => Alexander the 1-th
+              [email] => alex_1@email.com
+          )
+    )
+```
 
-    $data = array(
-      'age'  => 20,
-      'gender' => male,
-    );
+Select 1 row:
 
+```php
+    $first_student = $db->query_row("SELECT * FROM students ORDER BY `id` ASC LIMIT 0, 1");
+```
+```
+Array (
+  [id] => 1
+  [name] => Johny
+  [email] => john@email.com
+)
+```
+
+Select 1 column:
+
+```php
+    $names = $db->query_col("SELECT name FROM students");
+    print_r($names);
+```
+``` 
+    Array (
+      [0] => Johny
+      [1] => Alexander the 1-th
+      [2] => Alexander the 2-th
+    )
+```
+
+Return a single scalar value:
+
+```php
+    $random_name = $db->query_scalar("SELECT name FROM students ORDER BY RAND() LIMIT 0, 1");
+    print $random_name;
+```
+
+    John
+
+In summary, pick one of the following functions to query data effectively:
+* `query_select`
+* `query_select_manualkey`
+* `query_row`
+* `query_col`
+* `query_scalar`
+
+Insert Data
+-----------
+
+Use `$db->insert` and `$db->insert_batch` for data insertion:
+
+```php
+    // Single insert
     $student = array(
       'name'    => 'Johny',
       'email'   => 'john@random.email',
-      'created' => LazyDB::createExpression('NOW()'),
-      'data'    => $data, // will automatically be serialized
     );
     $student_id = $db->insert("students", $student);
     
-    // Batch insertions
+    // Batch insert
     $students = array();
     for ($i = 1; $i <= 2; $i++) {
       $students[] = array(
         'name'  => "Alexander the {$i}-th", 
-        'email' => "alex_{$i}@random.email",
+        'email' => "alex_{$i}@email.com"
       );
     }
     $db->insert_batch("students", $students);
 ```
 
-To update a record:
+Update Data
+-----------
+Use `$db->update` to update record.
 
 ```php
+    $student = $db->query_row("SELECT * FROM students WHERE id = 1");
     $student['name'] = "Peter O' Really";
-    $student['email'] = "peter@random.email";
-    $db->update("students", $student, "id = $student_id");
+    $student['email'] = "peter@email.com";
+    $db->update("students", $student, "id = 1");
 ```
 
-Note: You don't need to do quote escaping on string values, lazydb is smart enough to check if value passed is string and apply `mysql_real_escape_string` to it.
 
-
-
-To execute SELECT statement and return the resultset as an array of rows:
+To perform batch update, use `$db->insert_batch` and make use of SQL syntax `INSERT ... ON DUPLICATE KEY` as follows:
 
 ```php
     $students = $db->query_select("SELECT * FROM students");
-    print "<pre>" . print_r($students, true) . "</pre>";
 
-    "Array
-    (
-      [0] => Array
-          (
-              [id] => 1
-              [name] => Peter O' Really
-              [email] => peter@random.email
-          )
-
-      [1] => Array
-          (
-              [id] => 2
-              [name] => Alexander the 1-th
-              [email] => alex_1@random.email
-          )
-
-      [2] => Array
-          (
-              [id] => 3
-              [name] => Alexander the 2-th
-              [email] => alex_2@random.email
-          )
-    )"
-```
-
-If you want the keys of the array to take database's value instead of default increasing number
-
-```php
-    $students = $db->query_select_manualkey("SELECT * FROM students", "email");
-    print "<pre>" . print_r($students, true) . "</pre>";
-
-    "Array
-    (
-      [peter@random.email] => Array
-          (
-              [id] => 1
-              [name] => Peter O' Really
-              [email] => peter@random.email
-          )
-
-      [alex_1@random.email] => Array
-          (
-              [id] => 2
-              [name] => Alexander the 1-th
-              [email] => alex_1@random.email
-          )
-
-      [alex_2@random.email] => Array
-          (
-              [id] => 3
-              [name] => Alexander the 2-th
-              [email] => alex_2@random.email
-          )
-    )"
-```
-
-Execute SELECT statement that only gets 1 row and return that row as an php array.
-
-```php
-    $first_student = $db->query_row("SELECT * FROM students ORDER BY `id` ASC LIMIT 0, 1");
-    print "<pre>" . print_r($first_student, true) . "</pre>";
-    
-    "Array
-    (
-      [id] => 1
-      [name] => Johny
-      [email] => john@random.email
-    )"
-```
-
-Execute SELECT statement that only query 1 field. Returning an array contains values of that field.
-
-```php
-    $names = $db->query_col("SELECT name FROM students");
-    print "<pre>" . print_r($names, true) . "</pre>";
-    
-    "Array
-    (
-      [0] => Johny
-      [1] => Alexander the 1-th
-      [2] => Alexander the 2-th
-    )"
-```
-
-
-Execute SELECT statement that returns 1 single scalar value:
-
-```php
-    $random_name = $db->query_scalar("SELECT name FROM students ORDER BY RAND() LIMIT 0, 1");
-    print "Random student name: $random_name";
-```php
-
-
-And if your query doesn't fall into any of the above functions, you can always use `$db->query($sql)` which ultimately will call `mysql_query` function, for example to initially create the database:
-
-```php
-    $db->query("DROP TABLE IF EXISTS `students`");
-    $sql = "
-      CREATE TABLE `students` (
-        `id` INT(11) PRIMARY KEY AUTO_INCREMENT,
-        `name` VARCHAR(55) NOT NULL,
-        `email` VARCHAR(55) NOT NULL
-      )
-    ";
-    $db->query($sql);
-```
-
-
-Some other functions you might find useful:
-
-* List of databases in the system:
-`array get_databases()`
-* `array get_tables()`
-* `get_insert_id()`
-* `fetch_row()`
-* `fetch_num()`
-* `get_affected_rows()`
-* `get_num_rows()`
-
-
-Batch Updating
---------------
-To perform a batch update, utilize the syntax `INSERT ... ON DUPLICATE KEY` as follows:
-
-```php
-    $students = $db->query_select("SELECT * FROM students");
-    // Assuming we'll get 3 records
+    // Assuming we'll get 3 records, change the records' values and update them back
     $students[0]['name'] = "Alice";
     $students[0]['email'] = "alice@random.email";
     $students[1]['name'] = "Bob";
@@ -226,11 +155,74 @@ To perform a batch update, utilize the syntax `INSERT ... ON DUPLICATE KEY` as f
 ```
 
 
+General Query
+-------------
+If none of the above fits:
+```php
+  // Drop table
+  $db->query("DROP TABLE IF EXISTS `students`");
+  // Delete record
+  $db->query("DELETE FROM `students` WHERE id = 1");
+```
+
+Other notable features
+======================
+
+Insert mySQL's expression as field's data
+---------------------------------------
+If you want to insert a mysql's expression as a field's value, wrap the expression with `LazyDB::E($exp)`. For example:
+
+    INSERT INTO students (`name`, `created`) VALUES ('John', NOW());
+
+become:
+
+```php
+  $student  = array(
+    'name'      => 'John',
+    'created'   => LazyDB::E('NOW()')
+  );
+  $student_id = $db->insert('students', $student);
+```
+
+
+Automatic serialization of array value:
+---------------------------------------
+```php
+
+  $extra = array(
+    'age'  => 20,
+    'gender' => male
+  );
+
+  $student = array(
+    'name'    => 'John',
+    'email'   => 'john@email.com',
+    'extra'    => $extra, // will automatically be serialized
+  );
+  $student_id = $db->insert("students", $student);
+
+  // Now query that data
+  $student = $db->query_single("SELECT * FROM students WHERE id = $student_id");
+  print "Age: " . $student['extra']['age'];
+```
+
+
+
+Download & Usage
+================
+1/ Download and extract: https://github.com/nvquanghuy/lazydb/zipball/master
+
+2/ Modify database information in example.php. Run it to see a demo. 
+
+3/ If you want to log down SQL errors, create folder `errorlogs` in webroot and make it writable.
+
+4/ Initiate a lazydb object to connect to the database server using:
+
+```php
+    require "lazydb.php";
+    $db = new LazyDB("localhost", "root", "", "test");
+```
+
 Feedback & Suggestions
-----------------------
-
-You're welcome to give feedback, suggestion at nvquanghuy@gmail.com
-
-
- 
-
+======================
+You're welcome to fork, comments, give feedback or suggestion at nvquanghuy@gmail.com

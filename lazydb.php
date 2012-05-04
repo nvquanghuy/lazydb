@@ -83,6 +83,10 @@ class LazyDB {
 	public static function createExpression($sql_expression) {
 	  return new LazyDBExpressionType($sql_expression);
 	}
+
+	public static function E($sql_expression) {
+	  return new LazyDBExpressionType($sql_expression);
+	}
 	
 	public function __construct($host = "", $user = "", $pw = "", $db = "") {
 		$this->HOST = $host;
