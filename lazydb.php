@@ -50,10 +50,10 @@ class LazyDB {
 	public $LOGS_PATH = "./errorlogs";
 
 	/** Server information */
-	public $HOST;
-	public $USERNAME;
-	public $PASSWORD;
-	public $DATABASE;
+	private $HOST;
+	private $USERNAME;
+	private $PASSWORD;
+	private $DATABASE;
 	
 	/** Slashes handling, default is TRUE */
 	public $handleSlashes = TRUE;
